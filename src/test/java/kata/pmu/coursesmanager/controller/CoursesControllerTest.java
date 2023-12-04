@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kata.pmu.coursesmanager.controller.input.CourseEntry;
 import kata.pmu.coursesmanager.controller.input.ParticipantEntry;
 import kata.pmu.coursesmanager.controller.sender.ISender;
+import kata.pmu.coursesmanager.model.Course;
+import kata.pmu.coursesmanager.model.Participant;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,5 +58,44 @@ class CoursesControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void newCourseTestErrorAmountOfParticipant() throws Exception {
+        mockMvc
+                .perform(
+                        post("/api/v1/courses")
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                new Course(
+                                                        Date.from(Instant.now()),
+                                                        "name",
+                                                        1,
+                                                        List.of(
+                                                                new Participant("1", 1),
+                                                                new Participant("2", 2)))))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void newCourseTestErrorParticipantNotWithGoodOrder() throws Exception {
+        mockMvc
+                .perform(
+                        post("/api/v1/courses")
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                new Course(
+                                                        Date.from(Instant.now()),
+                                                        "name",
+                                                        1,
+                                                        List.of(
+                                                                new Participant("1", 1),
+                                                                new Participant("2", 4),
+                                                                new Participant("3", 5)))))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }
